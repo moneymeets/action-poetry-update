@@ -1,0 +1,68 @@
+name: "Poetry update"
+description: "Poetry dependencies update"
+inputs:
+  reviewers:
+    description: Comma seperated name of reviewers for created PR
+    required: false
+    default: ''
+  dry_run:
+    description: Dry run action, no pull request is created
+    default: 'true'
+    required: false
+  top_level:
+    description: Report only explicitly defined packages
+    default: 'true'
+    required: false
+  working_directory:
+    description: Working directory, defaults to GITHUB_WORKSPACE
+    required: false
+    default: ${{ github.workspace }}
+
+  ssh_key:
+    description: "SSH key to use for private repositories"
+    required: false
+
+
+runs:
+  using: "composite"
+
+  steps:
+    - name: Setup Python + Poetry for action
+      uses: moneymeets/action-setup-python-poetry@master
+      with:
+        working_directory: ${{ github.action_path }}
+        with_checks: 'false'
+        poetry_cache_enabled: 'false'
+
+    - id: action-virtual-env-path
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: |
+        VIRTUAL_ENV_PATH=$(find ~/.cache/pypoetry/virtualenvs -type d -maxdepth 1 | tail -n 1)
+        echo $VIRTUAL_ENV_PATH
+        echo "venv-path=$VIRTUAL_ENV_PATH" >> $GITHUB_OUTPUT
+
+    - name: Setup Python + Poetry for workspace
+      uses: moneymeets/action-setup-python-poetry@master
+      with:
+        working_directory: ${{ inputs.working_directory }}
+        with_checks: 'false'
+        poetry_cache_enabled: 'false'
+        ssh_key: ${{ inputs.ssh_key }}
+
+    - name: Revamp dependencies
+      shell: bash
+      id: revamp-dependencies
+      working-directory: ${{ inputs.working_directory }}
+      run: |
+        export PATH="${{ steps.action-virtual-env-path.outputs.venv-path }}/bin:$PATH"
+        
+        if [ ! -z "${{ inputs.ssh_key }}" ]; then
+            eval "$(ssh-agent -s)"
+            ssh-add - <<< "${{ inputs.ssh_key }}"
+        fi
+
+        actions_helper dependency-update \
+          --dry-run ${{ inputs.dry_run }} \
+          --top-level ${{ inputs.top_level }} \
+          --reviewers ${{ inputs.reviewers }}

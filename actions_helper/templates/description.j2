@@ -1,0 +1,28 @@
+## Auto Dependencies Update
+
+This PR contains the following updates:
+{% for action, items in updated_packages|groupby("action") %}
+
+--------
+## {{ action }}
+
+| Package | Version Installed | Version Available
+|---|---|---|
+{% for package in items %}
+{% set table_row -%}
+| {{ package.package_name }} | {{ package.version_installed|default('-', true) }} | {{ package.version_available|default('-', true) }} |
+{%- endset %}
+{{ table_row }}
+{% endfor %}
+{% endfor %}
+
+{% if skipped %}
+--------
+## Skipped
+
+| Package | Version Installed | Version Available |
+|---|---|---|
+{% for package in skipped %}
+| {{ package.package_name }} | {{ package.version_installed }} | {{ package.version_available }} |
+{% endfor %}
+{% endif %}
