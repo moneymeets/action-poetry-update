@@ -29,8 +29,9 @@ VERSION_NUMBER_REGEX = r"\d+\.\d+\.?(?:\*|\d+)?.*"
 
 def get_packages_info(revamp_dir: Path) -> Sequence[PackageInfo]:
     process = run_process(
-        f"poetry show --latest --top-level --no-ansi --directory {revamp_dir.resolve()}",
+        "poetry show --latest --top-level --no-ansi",
         capture_output=True,
+        cwd=revamp_dir,
     )
 
     if process.returncode != 0:
@@ -86,8 +87,9 @@ def get_packages_info(revamp_dir: Path) -> Sequence[PackageInfo]:
 
 def update_package(dry_run: bool, revamp_dir: Path) -> Sequence[UpdatedPackageInfo]:
     process = run_process(
-        f"poetry update --directory {revamp_dir.resolve()} {'--dry-run' if dry_run else ''}",
+        f"poetry update {'--dry-run' if dry_run else ''}",
         capture_output=True,
+        cwd=revamp_dir,
     )
 
     if process.returncode != 0:

@@ -34,13 +34,13 @@ runs:
         with_checks: 'false'
         poetry_cache_enabled: 'false'
 
-    - id: action-virtual-env-path
-      shell: bash
-      working-directory: ${{ github.action_path }}
-      run: |
-        VIRTUAL_ENV_PATH=$(find ~/.cache/pypoetry/virtualenvs -type d -maxdepth 1 | tail -n 1)
-        echo $VIRTUAL_ENV_PATH
-        echo "venv-path=$VIRTUAL_ENV_PATH" >> $GITHUB_OUTPUT
+#    - id: action-virtual-env-path
+#      shell: bash
+#      working-directory: ${{ github.action_path }}
+#      run: |
+#        VIRTUAL_ENV_PATH=$(find ~/.cache/pypoetry/virtualenvs -type d -maxdepth 1 | tail -n 1)
+#        echo $VIRTUAL_ENV_PATH
+#        echo "venv-path=$VIRTUAL_ENV_PATH" >> $GITHUB_OUTPUT
 
     - name: Setup Python + Poetry for workspace
       uses: moneymeets/action-setup-python-poetry@master
@@ -53,16 +53,17 @@ runs:
     - name: Revamp dependencies
       shell: bash
       id: revamp-dependencies
-      working-directory: ${{ inputs.working_directory }}
+      working-directory: ${{ github.action_path }}
       run: |
-        export PATH="${{ steps.action-virtual-env-path.outputs.venv-path }}/bin:$PATH"
+        # export PATH="${{ steps.action-virtual-env-path.outputs.venv-path }}/bin:$PATH"
         
         if [ ! -z "${{ inputs.ssh_key }}" ]; then
             eval "$(ssh-agent -s)"
             ssh-add - <<< "${{ inputs.ssh_key }}"
         fi
 
-        actions_helper dependency-update \
+        poetry run actions_helper dependency-update \
           --dry-run ${{ inputs.dry_run }} \
           --top-level ${{ inputs.top_level }} \
-          --reviewers ${{ inputs.reviewers }}
+          --reviewers ${{ inputs.reviewers }} \
+          --revamp-dir ${{ inputs.working_directory }}
