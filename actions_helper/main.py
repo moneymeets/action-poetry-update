@@ -19,7 +19,8 @@ def cli():
 @click.option("--reviewers", default="", type=str)
 @click.option("--revamp-dir", default=Path.cwd(), type=click.Path(file_okay=False, exists=True, path_type=Path))
 def cmd_dependency_update(dry_run: str, reviewers: str, top_level: str, revamp_dir: Path):
-    dry_run = parse_bool(dry_run)
+    # dry_run = parse_bool(dry_run)
+    dry_run = True
     top_level = parse_bool(top_level)
     reviewers = reviewers.split(",") if reviewers else []
     packages = get_packages_info(revamp_dir=revamp_dir)
