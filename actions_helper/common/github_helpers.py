@@ -1,5 +1,6 @@
 import os
 from http import HTTPStatus
+from pathlib import Path
 from typing import Optional, Sequence
 
 from github import Github, GithubException, Repository
@@ -15,11 +16,6 @@ COMMIT_MESSAGE = "chore(poetry): bump dependencies"
 
 GIT_AUTHOR_NAME = "Sir Mergealot"
 GIT_AUTHOR_EMAIL = "mergealot@moneymeets.com"
-
-
-def configure_git_user(name: str, email: str):
-    run_process(f"git config --local user.name '{name}'")
-    run_process(f"git config --local user.email '{email}'")
 
 
 def get_github_repository() -> Repository:
@@ -42,20 +38,13 @@ def modified_files() -> bool:
     return bool(run_process("git diff --quiet", check=False, capture_output=True).returncode)
 
 
-def checkout_remote_feature_branch_or_create_new_local_branch(branch_exists: bool):
-    print(
-        "Feature branch exists, checking out" if branch_exists else "Feature branch does not exist, creating it",
-    )
-    run_process(f"git checkout {'' if branch_exists else '-b'} {FEATURE_BRANCH_NAME}")
-
-
-def commit_and_push_changes(branch_exists: bool):
+def commit_and_push_changes(branch_exists: bool, cwd: Optional[Path] = None):
     print(
         "Adding fixup commit to existing branch" if branch_exists else "Adding commit to newly created branch",
     )
     commit_message = f"fixup! {COMMIT_MESSAGE}" if branch_exists else COMMIT_MESSAGE
-    run_process(f"git commit -a -m '{commit_message}'")
-    run_process(f"git push {'' if branch_exists else '-u origin HEAD'}")
+    run_process(f"git commit -a -m '{commit_message}'", cwd=cwd)
+    run_process(f"git push {'' if branch_exists else '-u origin HEAD'}", cwd=cwd)
 
 
 def ensure_pull_request_created(repo: Repository, pr_body: Optional[str], reviewers: Sequence[str]):
@@ -77,14 +66,23 @@ def ensure_pull_request_created(repo: Repository, pr_body: Optional[str], review
         print(f"Pull request already exists, {pull_request.number}")
 
 
-def check_and_push_changes(pr_body: str, reviewers: Sequence[str] = ()):
+def check_and_push_changes(pr_body: str, reviewers: Sequence[str] = (), cwd: Optional[Path] = None):
     if modified_files():
         print("Found modified files, committing changes")
-        configure_git_user(name=GIT_AUTHOR_NAME, email=GIT_AUTHOR_EMAIL)
+
+        # configure git user
+        run_process(f"git config --local user.name '{GIT_AUTHOR_NAME}'", cwd=cwd)
+        run_process(f"git config --local user.email '{GIT_AUTHOR_EMAIL}'", cwd=cwd)
+
         repository = get_github_repository()
         branch_exists = check_branch_exists(repo=repository, branch=FEATURE_BRANCH_REF)
-        checkout_remote_feature_branch_or_create_new_local_branch(branch_exists=branch_exists)
-        commit_and_push_changes(branch_exists=branch_exists)
+
+        print(
+            "Feature branch exists, checking out" if branch_exists else "Feature branch does not exist, creating it",
+        )
+        run_process(f"git checkout {'' if branch_exists else '-b'} {FEATURE_BRANCH_NAME}", cwd=cwd)
+
+        commit_and_push_changes(branch_exists=branch_exists, cwd=cwd)
         ensure_pull_request_created(repo=repository, pr_body=pr_body, reviewers=reviewers)
     else:
         print("Nothing changed, skipping this step")

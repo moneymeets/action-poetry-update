@@ -49,6 +49,7 @@ def cmd_dependency_update(dry_run: str, reviewers: str, top_level: str, revamp_d
         check_and_push_changes(
             pr_body=rendered_message,
             reviewers=reviewers,
+            cwd=revamp_dir,
         )
     else:
         print(rendered_message)
