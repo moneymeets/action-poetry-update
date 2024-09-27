@@ -86,8 +86,11 @@ def get_packages_info(revamp_dir: Path) -> Sequence[PackageInfo]:
 
 
 def update_package(dry_run: bool, revamp_dir: Path) -> Sequence[UpdatedPackageInfo]:
-    info = run_process("poetry env list --full-path", capture_output=True, cwd=revamp_dir)
+    info = run_process("poetry env info", capture_output=True, cwd=revamp_dir)
     print(info.stdout)
+
+    info2 = run_process("poetry env list --full-path", capture_output=True, cwd=revamp_dir)
+    print(info2.stdout)
 
     process = run_process(
         f"poetry update {'--dry-run' if dry_run else ''}",
