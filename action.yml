@@ -52,11 +52,19 @@ runs:
         
         echo "-----------------"
         
+        cd  ${{ inputs.working_directory }} && pwd && poetry run which python
+        
+        echo "-----------------"
+        
         cd  ${{ github.action_path }} && pwd && poetry env info
         
         echo "-----------------"
         
         cd  ${{ github.action_path }} && pwd && poetry env list
+  
+        echo "-----------------"
+        
+        cd  ${{ github.action_path }} && pwd && poetry run which python
   
         echo "-----------------"
         
