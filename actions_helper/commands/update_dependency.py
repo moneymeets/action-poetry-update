@@ -5,7 +5,7 @@ from typing import Optional
 
 def run_process(command: str, check: bool = True, cwd: Optional[Path] = None):
     print(f"RUNNING {command} - using {cwd}")
-    return subprocess.run(command, check=check, shell=True, cwd=cwd)
+    print(subprocess.run(command, capture_output=True, text=True, check=check, shell=True, cwd=cwd))
 
 
 def update_package(revamp_dir: Path):
