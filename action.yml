@@ -42,15 +42,22 @@ runs:
 
     - shell: bash
       run: |        
-        if [ ! -z "${{ inputs.ssh_key }}" ]; then
-            eval "$(ssh-agent -s)"
-            ssh-add - <<< "${{ inputs.ssh_key }}"
-        fi
-        
         echo "-----------------"
         
         cd  ${{ inputs.working_directory }} && pwd && poetry env info
         
         echo "-----------------"
+        
+        cd  ${{ inputs.working_directory }} && pwd && poetry env list
+        
+        echo "-----------------"
+        
+        cd  ${{ github.action_path }} && pwd && poetry env info
+        
+        echo "-----------------"
+        
+        cd  ${{ github.action_path }} && pwd && poetry env list
   
+        echo "-----------------"
+        
         cd  ${{ github.action_path }} && pwd && poetry run actions_helper dependency-update --revamp-dir ${{ inputs.working_directory }}
