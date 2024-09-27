@@ -47,4 +47,4 @@ runs:
             ssh-add - <<< "${{ inputs.ssh_key }}"
         fi
 
-        cd  ${{ github.action_path }} && poetry run actions_helper dependency-update --revamp-dir ${{ inputs.working_directory }}
+        cd  ${{ github.action_path }} && pwd && poetry run actions_helper dependency-update --revamp-dir ${{ inputs.working_directory }}
