@@ -42,6 +42,11 @@ runs:
 
     - shell: bash
       run: |        
+        
+        echo "-----------------"
+        
+        cd  ${{ inputs.working_directory }} && pwd && echo $VIRTUAL_ENV
+        
         echo "-----------------"
         
         cd  ${{ inputs.working_directory }} && pwd && poetry env info
@@ -53,6 +58,10 @@ runs:
         echo "-----------------"
         
         cd  ${{ inputs.working_directory }} && pwd && poetry run which python
+        
+        echo "-----------------"
+        
+        cd  ${{ github.action_path }} && pwd && echo $VIRTUAL_ENV
         
         echo "-----------------"
         
