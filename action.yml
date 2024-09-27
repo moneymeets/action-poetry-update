@@ -41,11 +41,10 @@ runs:
         ssh_key: ${{ inputs.ssh_key }}
 
     - shell: bash
-      working-directory: ${{ github.action_path }}
       run: |        
         if [ ! -z "${{ inputs.ssh_key }}" ]; then
             eval "$(ssh-agent -s)"
             ssh-add - <<< "${{ inputs.ssh_key }}"
         fi
 
-        poetry run actions_helper dependency-update --revamp-dir ${{ inputs.working_directory }}
+        cd  ${{ github.action_path }} && poetry run actions_helper dependency-update --revamp-dir ${{ inputs.working_directory }}
