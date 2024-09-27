@@ -11,5 +11,5 @@ def run_process(command: str, check: bool = True, cwd: Optional[Path] = None):
 def update_package(revamp_dir: Path):
     run_process("pwd")
     run_process("pwd", cwd=revamp_dir)
-    # run_process("poetry env info", cwd=revamp_dir)
-    # run_process("poetry env list --full-path", cwd=revamp_dir)
+    run_process("poetry env info", cwd=revamp_dir)
+    run_process("poetry env list --full-path", cwd=revamp_dir)
