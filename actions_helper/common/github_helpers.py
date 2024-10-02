@@ -1,6 +1,6 @@
 import os
 from http import HTTPStatus
-from typing import Optional, Sequence
+from typing import Optional
 
 from github import Github, GithubException, Repository
 
@@ -46,7 +46,7 @@ def commit_and_push_changes(branch_exists: bool):
     run_process(f"git push {'' if branch_exists else '-u origin HEAD'}")
 
 
-def ensure_pull_request_created(repo: Repository, pr_body: Optional[str], reviewers: Sequence[str]):
+def ensure_pull_request_created(repo: Repository, pr_body: Optional[str]):
     print("Checking for pull requests")
     pr = repo.get_pulls(state="open", head=f"{repo.organization.login}:{FEATURE_BRANCH_REF}")
 
@@ -57,16 +57,14 @@ def ensure_pull_request_created(repo: Repository, pr_body: Optional[str], review
             base=BASE_BRANCH_REF,
             head=FEATURE_BRANCH_REF,
         )
-
-        pull_request.create_review_request(reviewers=reviewers)
-        print(f"PR <{pull_request.number}> created, reviewers <{reviewers}>")
+        print(f"PR <{pull_request.number}> created")
     else:
         pull_request, *_ = tuple(pr)
         pull_request.edit(body=pr_body)
         print(f"Pull request already exists, {pull_request.number}")
 
 
-def check_and_push_changes(pr_body: str, reviewers: Sequence[str] = ()):
+def check_and_push_changes(pr_body: str):
     if modified_files():
         print("Found modified files, committing changes")
 
@@ -83,6 +81,6 @@ def check_and_push_changes(pr_body: str, reviewers: Sequence[str] = ()):
         run_process(f"git checkout {'' if branch_exists else '-b'} {FEATURE_BRANCH_NAME}")
 
         commit_and_push_changes(branch_exists=branch_exists)
-        ensure_pull_request_created(repo=repository, pr_body=pr_body, reviewers=reviewers)
+        ensure_pull_request_created(repo=repository, pr_body=pr_body)
     else:
         print("Nothing changed, skipping this step")

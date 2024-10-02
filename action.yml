@@ -1,10 +1,6 @@
 name: "Poetry update"
 description: "Poetry dependencies update"
 inputs:
-  reviewers:
-    description: Comma seperated name of reviewers for created PR
-    required: false
-    default: ''
   dry_run:
     description: Dry run action, no pull request is created
     default: 'false'
@@ -57,5 +53,4 @@ runs:
         fi
         
         ${{ steps.action-virtual-env-path.outputs.venv-path }}/bin/actions_helper dependency-update \
-          --dry-run ${{ inputs.dry_run }} \
-          --reviewers ${{ inputs.reviewers }}
+          --dry-run ${{ inputs.dry_run }}
