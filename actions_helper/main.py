@@ -12,10 +12,8 @@ def cli():
 
 @cli.command(name="dependency-update")
 @click.option("--dry-run", default="false", type=str)
-@click.option("--reviewers", default="", type=str)
-def cmd_dependency_update(dry_run: str, reviewers: str):
+def cmd_dependency_update(dry_run: str):
     dry_run = parse_bool(dry_run)
-    reviewers = reviewers.split(",") if reviewers else []
     updated_packages = update_packages()
     packages = get_packages_info()
 
@@ -34,15 +32,13 @@ After merging this pull request, the following packages will **not** be on the l
 {packages.strip()}
 ```
 """
+    print(rendered_message)
 
     if not dry_run:
         print("Commiting to GitHub...")
         check_and_push_changes(
             pr_body=rendered_message,
-            reviewers=reviewers,
         )
-    else:
-        print(rendered_message)
 
 
 if __name__ == "__main__":
