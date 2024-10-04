@@ -23,7 +23,19 @@ def get_github_repository() -> Repository:
     )
 
 
-def check_branch_exists(repo: Repository, branch: str) -> bool:
+def configure_git_user(name: str, email: str):
+    run_process(f"git config --local user.name '{name}'")
+    run_process(f"git config --local user.email '{email}'")
+
+
+def checkout_remote_feature_branch_or_create_new_local_branch(branch_exists: bool):
+    print(
+        "Feature branch exists, checking out" if branch_exists else "Feature branch does not exist, creating it",
+    )
+    run_process(f"git checkout {'' if branch_exists else '-b'} {FEATURE_BRANCH_NAME}")
+
+
+def check_remote_branch_exists(repo: Repository, branch: str) -> bool:
     try:
         repo.get_branch(branch=branch)
         return True
@@ -37,13 +49,12 @@ def modified_files() -> bool:
     return bool(run_process("git diff --quiet", check=False, capture_output=True).returncode)
 
 
-def commit_and_push_changes(branch_exists: bool):
+def commit_and_push_changes(remote_branch_exists: bool):
     print(
-        "Adding fixup commit to existing branch" if branch_exists else "Adding commit to newly created branch",
+        "Adding fixup commit to existing branch" if remote_branch_exists else "Adding commit to newly created branch",
     )
-    commit_message = f"fixup! {COMMIT_MESSAGE}" if branch_exists else COMMIT_MESSAGE
-    run_process(f"git commit -a -m '{commit_message}'")
-    run_process(f"git push {'' if branch_exists else '-u origin HEAD'}")
+    run_process(f"git commit -a -m '{COMMIT_MESSAGE}'")
+    run_process(f"git push --force-with-lease {'' if remote_branch_exists else '-u origin HEAD'}")
 
 
 def ensure_pull_request_created(repo: Repository, pr_body: Optional[str]):
@@ -64,23 +75,14 @@ def ensure_pull_request_created(repo: Repository, pr_body: Optional[str]):
         print(f"Pull request already exists, {pull_request.number}")
 
 
-def check_and_push_changes(pr_body: str):
+def check_and_push_changes(pr_body: str, remote_branch_exists: bool):
     if modified_files():
         print("Found modified files, committing changes")
 
-        # configure git user
-        run_process(f"git config --local user.name '{GIT_AUTHOR_NAME}'")
-        run_process(f"git config --local user.email '{GIT_AUTHOR_EMAIL}'")
-
         repository = get_github_repository()
-        branch_exists = check_branch_exists(repo=repository, branch=FEATURE_BRANCH_REF)
 
-        print(
-            "Feature branch exists, checking out" if branch_exists else "Feature branch does not exist, creating it",
-        )
-        run_process(f"git checkout {'' if branch_exists else '-b'} {FEATURE_BRANCH_NAME}")
-
-        commit_and_push_changes(branch_exists=branch_exists)
+        commit_and_push_changes(remote_branch_exists=remote_branch_exists)
         ensure_pull_request_created(repo=repository, pr_body=pr_body)
+
     else:
-        print("Nothing changed, skipping this step")
+        print("Nothing changed, skipping this step  ")
