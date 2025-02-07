@@ -44,14 +44,15 @@ def cmd_dependency_update(dry_run: str):
 #### Not Updated
 
 {
-f"""After merging this pull request, the following packages will **not** be on the latest version:
+        f'''After merging this pull request, the following packages will **not** be on the latest version:
 
 ```
 {packages.strip()}
 ```
-"""
-if packages.strip() else 'All packages are up-to-date.'
-}
+'''
+        if packages.strip()
+        else "All packages are up-to-date."
+    }
 """
     print(rendered_message)
 
