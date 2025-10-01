@@ -9,7 +9,7 @@ def get_packages_info() -> str:
 
 
 def update_packages() -> str:
-    run_process("poetry self update")
+    run_process("pipx upgrade poetry")
     process = run_process("poetry update --no-ansi", capture_output=True)
 
     return "\n".join(
